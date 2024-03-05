@@ -18,7 +18,7 @@
 #
 #    - lancer()
 #
-
+import sys
 import json
 # I've first to import json files here
 # fichiers json
@@ -46,9 +46,9 @@ class Question:
         q = Question(data['titre'], choix, bonne_reponse)
         return q
 
-    def poser(self):
+    def poser(self, numero_question, nb_questions):    # Afficher le num de la question
 
-        print(f"QUESTION n°{len(questions)}")
+        print(f"QUESTION n°{numero_question} / {nb_questions}")
         print("  " + self.titre_de_question)
         for i in range(len(self.choix)):
             print("  ", i+1, "-", self.choix[i])
@@ -88,30 +88,41 @@ class Questionnaire:  # Reconstituer la classe Questionnaire
         self.difficulte = difficulte
         self.questions = questions
 
+    def from_json_data(data):
+        questionnaire_data_question = data['questions']
+          # Poser pr toutes les questions
+
+        questions = [Question.FromJsonData(i) for i in questionnaire_data_question]
+        return Questionnaire(data['categorie'], data['titre'], data['difficulte'], questions)
+
+    def from_json_file(file_name):
+
+        try:
+            file = open(file_name, "r")
+            json_data = file.read()
+            file.close()
+            questionnaire_data = json.loads(json_data)  # charger en ficher lisible (str)
+        except:
+            print("Exception lors de l'ouverture du fichier")
+            return None
+        return Questionnaire.from_json_data(questionnaire_data)
 
     def lancer(self):
         score = 0
+        nb_questions = len(self.questions)
         print(f"CATEGORIE: {self.categorie}")
         print(f"Titre de catégorie: {self.titre_de_categorie}")
         print(f"Difficulté: {self.difficulte}")
-        print(f"Nombre de question: {len(questions)}")
-        for question in self.questions:
-            if question.poser():
+        print(f"Nombre de question: {nb_questions}")
+        for i in range(nb_questions):
+            question = self.questions[i]
+            if question.poser(i+1, nb_questions):
                 score += 1
         print("Score final :", score, "sur", len(self.questions))
         return score
 
 
-def file_parameter(file_name):
-    file = open(file_name, "r")
-    json_data = file.read()
-    file.close()
-    questionnaire_data = json.loads(json_data)  # charger en ficher lisible (str)
-    categorie = questionnaire_data['categorie']
-    titre_de_categorie = questionnaire_data['titre']
-    difficulte = questionnaire_data['difficulte']
-    question_data_question = questionnaire_data['questions']
-    return categorie, titre_de_categorie, difficulte, question_data_question
+
 
 
  # 'questionnaire_data' contains category, title , questions and difficulty level
@@ -127,44 +138,45 @@ def file_parameter(file_name):
 # First of all select the category, category title and difficulty by user
 
 
-file_names = ["animaux_leschats_confirme.json", "animaux_leschats_debutant.json", "animaux_leschats_expert.json",
-              "arts_museedulouvre_confirme.json", "arts_museedulouvre_debutant.json", "arts_museedulouvre_expert.json",
-              "cinema_alien_confirme.json", "cinema_alien_debutant.json", "cinema_alien_expert.json",
-              "cinema_starwars_confirme.json", "cinema_starwars_debutant.json", "cinema_starwars_expert.json"]
 
 
-print("Voulez-vous que votre questionnaire soit de :")
 
-i = 0   # Gérer l'affichage des numéros
+"""i = 0   # Gérer l'affichage des numéros
 for file_name in file_names:
     i += 1     # Implémenter la valeur de i de +1 à chaque boucle
     categorie, titre_de_categorie, difficulte, question_data_question= file_parameter(file_name)
     print(f"{i}) Catégorie: '{categorie}'      ------ Titre: '{titre_de_categorie}'     ------     Difficulté: '{difficulte}'  ")
+"""
 
-
-choix_joueur = int(input("Votre préférence:"))
+"""choix_joueur = int(input("Votre préférence:"))
 
 questions = []
-file_choice = file_names[choix_joueur-1]     # Choix de fichier du user
+file_choice = file_names[choix_joueur-1]     # Choix de fichier du user  """
 
-categorie_c, titre_de_categorie_c, difficulte_c, question_data_question_c = file_parameter(file_choice) # Paramètres de catégorie choisie du user
+"""categorie_c, titre_de_categorie_c, difficulte_c, question_data_question_c = file_parameter(file_choice) # Paramètres de catégorie choisie du user"""
 
 
 
 #print(titre_de_categorie)
-for i in range(0, len(question_data_question_c)):   # Poser pr toutes les questions
-    q = Question.FromJsonData(question_data_question_c[i])
-    questions.append(q)
+
 #q.poser()
-Questionnaire(categorie_c, titre_de_categorie_c, difficulte_c, questions).lancer()
+"""Questionnaire(categorie_c, titre_de_categorie_c, difficulte_c, questions).lancer()"""
+
+"""Questionnaire.from_json_file("cinema_starwars_debutant.json").lancer()
+"""
+
+print(sys.argv) # Gérer les noms de fichiers
+
+if len(sys.argv) < 2:
+    print("ERREUR: Veuillez spécifier le nom du fichier json à charger")
+    exit(0)
 
 
+json_file_name = sys.argv[1]
+questionnaire = Questionnaire.from_json_file(json_file_name).lancer()
 
-
-
-
-
-
+if questionnaire:
+    questionnaire.lancer()  # Lancer le questionnaire
 
 
 
