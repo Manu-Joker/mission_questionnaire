@@ -35,10 +35,11 @@ class Question:
     def FromJsonData(data):
         # ....
 
-
+        # Transforme les tuple des choix en : choix[1], choix[2] etc...
         choix = [i[0] for i in data['choix']]
 
-        [bonne_reponse] = [i[0] for i in data['choix'] if i[1]]  # bonne réponse lorsque il y'a True
+        [bonne_reponse] = [i[0] for i in data['choix'] if i[1]]  # bonne réponse lorsque le bool est True
+        # Si aucune ou plusieurs bonnes réponses, il y'a anomalie dans les données
         if len([bonne_reponse]) != 1:
             return None
 
@@ -93,6 +94,8 @@ class Questionnaire:  # Reconstituer la classe Questionnaire
           # Poser pr toutes les questions
 
         questions = [Question.FromJsonData(i) for i in questionnaire_data_question]
+        # Supprime les questions None (Qui n'ont pas pu être crée
+        questions = [i for i in questions if i]
         return Questionnaire(data['categorie'], data['titre'], data['difficulte'], questions)
 
     def from_json_file(file_name):
