@@ -90,12 +90,29 @@ class Questionnaire:  # Reconstituer la classe Questionnaire
         self.questions = questions
 
     def from_json_data(data):
+
+        if not data.get('questions'):
+            return None
         questionnaire_data_question = data['questions']
           # Poser pr toutes les questions
 
         questions = [Question.FromJsonData(i) for i in questionnaire_data_question]
-        # Supprime les questions None (Qui n'ont pas pu être crée
+        # Supprime les questions None (Qui n'ont pas pu être crée)
         questions = [i for i in questions if i]
+
+        # Dans le cas où le fichier json ne contient pas de "catégorie" ou de "difficulté", on la suppose inconnue
+
+        # Par contre si elle ne contient pas de "titre" ou de "questions", on return None
+        if not data.get('categorie'):
+            data["categorie"]= 'Inconnue'
+        if not data.get('difficulte'):
+            data["difficulte"] = 'Inconnue'
+
+        if not data.get('titre'):
+            return None
+
+
+
         return Questionnaire(data['categorie'], data['titre'], data['difficulte'], questions)
 
     def from_json_file(file_name):
@@ -168,18 +185,21 @@ file_choice = file_names[choix_joueur-1]     # Choix de fichier du user  """
 """Questionnaire.from_json_file("cinema_starwars_debutant.json").lancer()
 """
 
-print(sys.argv) # Gérer les noms de fichiers
+if __name__ == "__main__":   # Ici, le nom du fichier "questionnaire.py" est "main"
 
-if len(sys.argv) < 2:
-    print("ERREUR: Veuillez spécifier le nom du fichier json à charger")
-    exit(0)
+    print(sys.argv) # Gérer les noms de fichiers
 
+    if len(sys.argv) < 2:
+        print("ERREUR: Veuillez spécifier le nom du fichier json à charger")
+        exit(0)
+    json_file_name = sys.argv[1]
+    questionnaire = Questionnaire.from_json_file(json_file_name).lancer()
 
-json_file_name = sys.argv[1]
-questionnaire = Questionnaire.from_json_file(json_file_name).lancer()
+    if questionnaire:
+        questionnaire.lancer()  # Lancer le questionnaire
 
-if questionnaire:
-    questionnaire.lancer()  # Lancer le questionnaire
+else:               # Au cas où on a importé ce fichier dans un autre fichier, son nom ne sera plus 'main'
+    print(__name__)  # Donc afficher cet autre nom
 
 
 
